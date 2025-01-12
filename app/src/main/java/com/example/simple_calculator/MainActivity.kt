@@ -143,7 +143,7 @@ fun CalculatorScreen(navController: NavController) {
                     listOf("7", "8", "9"),
                     listOf("4", "5", "6"),
                     listOf("1", "2", "3"),
-                    listOf(".", "0", "DEL")
+                    listOf(".", "0", "Clear")
                 )
                 for (row in buttons) {
                     Row(
@@ -236,14 +236,12 @@ fun CalculatorScreen(navController: NavController) {
                 }
             }
 
-            // Scientific Button with expand/collapse animation
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(expandedHeight)
                     .background(color = Color(0xFF009688))
                     .clickable {
-                        // Toggle the expansion state when clicked
                         isScientificExpanded = !isScientificExpanded
                     }
             ) {
@@ -252,16 +250,16 @@ fun CalculatorScreen(navController: NavController) {
                     color = Color.White,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
 
-            // If Scientific is expanded, show additional buttons or content below
             if (isScientificExpanded) {
                 Column(
                     verticalArrangement = Arrangement.SpaceEvenly,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(color = Color(0xFF009688))
                 ) {
                     val scientificButtons = listOf(
                         listOf("sin", "cos", "tan"),
@@ -279,51 +277,31 @@ fun CalculatorScreen(navController: NavController) {
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(80.dp)
-                                        .background(color = Color.DarkGray)
+                                        .background(color = Color(0xFF009688)) // Explicit color here
                                         .padding(2.dp)
                                         .clickable {
-                                            // Handle scientific operation button clicks
                                             if (isResultDisplayed) {
                                                 input = ""
                                                 isResultDisplayed = false
                                             }
 
                                             when (label) {
-                                                "SIN" -> {
-                                                    input = sin(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
-                                                }
-                                                "COS" -> {
-                                                    input = cos(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
-                                                }
-                                                "TAN" -> {
-                                                    input = tan(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
-                                                }
-                                                "LN" -> {
-                                                    input = ln(input.toDoubleOrNull() ?: 1.0).toString()
-                                                }
-                                                "LOG" -> {
-                                                    input = log10(input.toDoubleOrNull() ?: 1.0).toString()
-                                                }
-                                                "√" -> {
-                                                    input = sqrt(input.toDoubleOrNull() ?: 0.0).toString()
-                                                }
-                                                "π" -> {
-                                                    input = Math.PI.toString()
-                                                }
-                                                "e" -> {
-                                                    input = Math.E.toString()
-                                                }
-                                                "^" -> {
-                                                    // Example power button: Raise input to the power of 2
-                                                    input = input.toDoubleOrNull()?.let { base -> base.pow(2) }?.toString() ?: "0"
-                                                }
+                                                "sin" -> input = sin(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
+                                                "cos" -> input = cos(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
+                                                "tan" -> input = tan(Math.toRadians(input.toDoubleOrNull() ?: 0.0)).toString()
+                                                "ln" -> input = ln(input.toDoubleOrNull() ?: 1.0).toString()
+                                                "log" -> input = log10(input.toDoubleOrNull() ?: 1.0).toString()
+                                                "√" -> input = sqrt(input.toDoubleOrNull() ?: 0.0).toString()
+                                                "π" -> input = Math.PI.toString()
+                                                "e" -> input = Math.E.toString()
+                                                "^" -> input = input.toDoubleOrNull()?.let { base -> base.pow(2) }?.toString() ?: "0"
                                             }
                                         }
                                 ) {
                                     Text(
                                         text = label,
                                         fontSize = 24.sp,
-                                        color = Color.White,
+                                        color = Color.White, // Ensure button text is visible on dark background
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.align(Alignment.Center)
                                     )
@@ -333,6 +311,7 @@ fun CalculatorScreen(navController: NavController) {
                     }
                 }
             }
+
         }
     }
 }
