@@ -1,6 +1,8 @@
 package com.example.simple_calculator
 
 import android.os.Bundle
+import android.content.Context
+import android.os.Vibrator
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -13,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,7 +42,6 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CalculatorApp() {
-    // Setup NavController for navigation
     val navController = rememberNavController()
 
     NavHost(navController = navController, startDestination = "calculator") {
@@ -57,8 +59,9 @@ fun CalculatorScreen(navController: NavController) {
     var isResultDisplayed by remember { mutableStateOf(false) }
     var isScientificExpanded by remember { mutableStateOf(false) }
     var history by remember { mutableStateOf(mutableListOf<String>()) }
+    val context = LocalContext.current
+    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
 
-    // Animating the height of the Scientific button
     val expandedHeight by animateDpAsState(targetValue = if (isScientificExpanded) 200.dp else 80.dp)
 
     Column(
@@ -68,28 +71,23 @@ fun CalculatorScreen(navController: NavController) {
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // RAD Display with white background spanning the entire row
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(color = Color.White)
                 .padding(8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween // Align text and button
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
                 text = "RAD",
                 color = Color.Black,
                 fontSize = 20.sp
             )
-
-            // Colon button next to RAD to navigate to history screen
             Box(
                 modifier = Modifier
-                    .size(40.dp) // Small size for the button
+                    .size(40.dp)
                     .background(Color.White)
-                    .clickable {
-                        navController.navigate("history") // Navigate to history screen
-                    },
+                    .clickable { navController.navigate("history") },
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -101,7 +99,6 @@ fun CalculatorScreen(navController: NavController) {
             }
         }
 
-        // Display Area (Increased height for the display area)
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -127,14 +124,12 @@ fun CalculatorScreen(navController: NavController) {
             )
         }
 
-        // Keyboard Area (take full available space)
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
             verticalArrangement = Arrangement.SpaceEvenly
         ) {
-            // Number Pad
             Column(
                 modifier = Modifier.weight(3f),
                 verticalArrangement = Arrangement.SpaceEvenly
@@ -158,7 +153,8 @@ fun CalculatorScreen(navController: NavController) {
                                     .background(color = Color.DarkGray)
                                     .padding(2.dp)
                                     .clickable {
-                                        // Handle button clicks
+                                        vibrator.vibrate(50)
+
                                         if (isResultDisplayed) {
                                             input = ""
                                             isResultDisplayed = false
@@ -191,7 +187,6 @@ fun CalculatorScreen(navController: NavController) {
                 }
             }
 
-            // Operator Buttons
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
@@ -205,6 +200,8 @@ fun CalculatorScreen(navController: NavController) {
                             .background(color = Color.LightGray)
                             .padding(2.dp)
                             .clickable {
+                                vibrator.vibrate(50)
+
                                 if (isResultDisplayed) {
                                     isResultDisplayed = false
                                     firstOperand = result
@@ -214,7 +211,7 @@ fun CalculatorScreen(navController: NavController) {
                                 when (op) {
                                     "=" -> {
                                         result = calculate(firstOperand ?: "", input, operator ?: "")
-                                        history.add("$firstOperand $operator $input = $result") // Add to history
+                                        history.add("$firstOperand $operator $input = $result")
                                         isResultDisplayed = true
                                     }
                                     else -> {
@@ -241,9 +238,7 @@ fun CalculatorScreen(navController: NavController) {
                     .fillMaxWidth()
                     .height(expandedHeight)
                     .background(color = Color(0xFF009688))
-                    .clickable {
-                        isScientificExpanded = !isScientificExpanded
-                    }
+                    .clickable { isScientificExpanded = !isScientificExpanded }
             ) {
                 Text(
                     text = "Scientific",
@@ -264,7 +259,8 @@ fun CalculatorScreen(navController: NavController) {
                     val scientificButtons = listOf(
                         listOf("sin", "cos", "tan"),
                         listOf("ln", "log", "√"),
-                        listOf("π", "e", "^")
+                        listOf("π", "e", "^"),
+                        listOf("log2", "tan⁻¹")
                     )
 
                     for (row in scientificButtons) {
@@ -277,9 +273,11 @@ fun CalculatorScreen(navController: NavController) {
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(80.dp)
-                                        .background(color = Color(0xFF009688)) // Explicit color here
+                                        .background(color = Color(0xFF009688))
                                         .padding(2.dp)
                                         .clickable {
+                                            vibrator.vibrate(50)
+
                                             if (isResultDisplayed) {
                                                 input = ""
                                                 isResultDisplayed = false
@@ -295,13 +293,15 @@ fun CalculatorScreen(navController: NavController) {
                                                 "π" -> input = Math.PI.toString()
                                                 "e" -> input = Math.E.toString()
                                                 "^" -> input = input.toDoubleOrNull()?.let { base -> base.pow(2) }?.toString() ?: "0"
+                                                "log2" -> input = log2(input.toDoubleOrNull() ?: 1.0).toString()
+                                                "tan⁻¹" -> input = Math.toDegrees(atan(input.toDoubleOrNull() ?: 0.0)).toString()
                                             }
                                         }
                                 ) {
                                     Text(
                                         text = label,
                                         fontSize = 24.sp,
-                                        color = Color.White, // Ensure button text is visible on dark background
+                                        color = Color.White,
                                         fontWeight = FontWeight.Bold,
                                         modifier = Modifier.align(Alignment.Center)
                                     )
@@ -311,44 +311,6 @@ fun CalculatorScreen(navController: NavController) {
                     }
                 }
             }
-
-        }
-    }
-}
-
-@Composable
-fun HistoryScreen(navController: NavController) {
-    // Hardcoded example history
-    val history = remember { mutableStateOf(listOf<String>()) }
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp)
-    ) {
-        Text(
-            text = "History",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.Black,
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        // Display the history
-        history.value.forEach { operation ->
-            Text(
-                text = operation,
-                fontSize = 18.sp,
-                color = Color.Black,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.weight(1f))
-
-        // Back button to return to the calculator screen
-        Button(
-            onClick = { navController.popBackStack() },
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        ) {
-            Text("Back")
         }
     }
 }
@@ -365,19 +327,29 @@ fun calculate(firstOperand: String, secondOperand: String, operator: String): St
                 if (num2 != 0.0) {
                     (num1 / num2).toString()
                 } else {
-                    "Error"
+                    "Error: Division by zero"
                 }
             }
             else -> "Error"
         }
     } catch (e: Exception) {
-        "Error"
+        "Error: Invalid input"
     }
+}
+
+@Composable
+fun HistoryScreen(navController: NavController) {
+    Text(
+        text = "History screen coming soon!",
+        modifier = Modifier.fillMaxSize(),
+        fontSize = 24.sp,
+        textAlign = TextAlign.Center
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
-fun CalculatorPreview() {
+fun DefaultPreview() {
     Simple_CalculatorTheme {
         CalculatorApp()
     }
